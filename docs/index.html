@@ -1710,7 +1710,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font-body);color:var(--t
 .mlx .mi-drawer-head{padding:24px 28px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2}
 .mlx .mi-drawer-close{position:absolute;top:20px;right:22px;width:32px;height:32px;border-radius:50%;background:var(--void-04);border:none;cursor:pointer;font-size:14px;color:var(--text-2)}
 .mlx .mi-drawer-name{font-family:var(--font);font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1.15;padding-right:36px}
-.mlx .mi-chip-type{background:var(--plum-soft);color:var(--plum);text-transform:uppercase}
+.mlx .mi-chip-type{background:var(--plum-soft);color:var(--plum)}
 .mlx .mi-drawer-addr{font-size:12.5px;color:var(--text-3);margin-top:14px;line-height:1.4}
 .mlx .mi-drawer-contact{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px;font-size:12.5px}
 .mlx .mi-drawer-contact a{color:var(--freeze-text);text-decoration:none;font-weight:600}
@@ -1721,7 +1721,7 @@ html,body{height:100%;overflow:hidden;font-family:var(--font-body);color:var(--t
 .mlx .mi-drawer-reviews{font-size:12.5px;color:var(--text-3)}
 .mlx .mi-chip{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);letter-spacing:.03em}
 .mlx .mi-chip-pe{background:var(--plum-soft);color:var(--plum)}
-.mlx .mi-chip-pos{background:var(--peach-soft);color:var(--peach-text);text-transform:capitalize}
+.mlx .mi-chip-pos{background:var(--peach-soft);color:var(--peach-text)}
 .mlx .mi-drawer-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;align-items:center}
 .mlx .mi-drawer-body{padding:20px 28px 40px}
 .mlx .mi-drawer-sec{margin-top:22px}
@@ -9208,11 +9208,18 @@ var LAND_SCREEN = "<section class=\"screen active\" id=\"screen-marketintel\">\n
     if (!x) return;
     const head = document.getElementById('mi-drawer-head-content');
     // ONE consolidated identity-chip row under the name: you · type · positioning · PE · hiring
+    // Normalize raw fields to consistent Title Case (acronyms like PE preserved) so the chips
+    // don't read as a CAPS / Title / lowercase mix straight from the data.
+    const _chipAcr = { pe:'PE', llc:'LLC', usa:'USA', ce:'CE' };
+    const _chipSmall = { of:1, the:1, and:1, a:1, an:1, to:1, for:1 };
+    const _tcWord = p => { const lw = p.toLowerCase(); return _chipAcr[lw] || (lw.charAt(0).toUpperCase() + lw.slice(1)); };
+    const chipLabel = s => String(s||'').replace(/_/g,' ').trim().split(/\s+/).map((w,i) => (i>0 && _chipSmall[w.toLowerCase()]) ? w.toLowerCase() : w.split('-').map(_tcWord).join('-')).join(' ');
+    const _peLabel = { direct_pe_owned:'PE-owned', franchisee_of_pe_brand:'PE-backed franchise' };
     const chips = [];
     if (isYou) chips.push('<span class="mi-chip mi-chip-you">This is you</span>');
-    if (x.biz_type) chips.push('<span class="mi-chip mi-chip-type">' + esc(x.biz_type) + '</span>');
-    if (x.positioning) chips.push('<span class="mi-chip mi-chip-pos">' + esc(x.positioning.replace('_',' ')) + '</span>');
-    if (x.pe_status && x.pe_status !== 'independent') chips.push('<span class="mi-chip mi-chip-pe">' + esc(x.pe_status.replace(/_/g,' ')) + '</span>');
+    if (x.biz_type) chips.push('<span class="mi-chip mi-chip-type">' + esc(chipLabel(x.biz_type)) + '</span>');
+    if (x.positioning) chips.push('<span class="mi-chip mi-chip-pos">' + esc(chipLabel(x.positioning)) + '</span>');
+    if (x.pe_status && x.pe_status !== 'independent') chips.push('<span class="mi-chip mi-chip-pe">' + esc(_peLabel[x.pe_status] || chipLabel(x.pe_status)) + '</span>');
     if (x.is_hiring === 1) chips.push('<span class="mi-chip mi-chip-hiring">⚑ Hiring / expanding</span>');
     const rating = x.rating != null
       ? '<span class="mi-drawer-rating"><span class="star">★</span> ' + x.rating + '</span><span class="mi-drawer-reviews">' + fmt(x.reviews||0) + ' reviews</span>'
@@ -9306,19 +9313,19 @@ var LAND_SCREEN = "<section class=\"screen active\" id=\"screen-marketintel\">\n
       const unitLbl = u => u ? ' <span class="mi-price-unit">· ' + esc(u.replace(/^per_/,'per ').replace(/_/g,' ')) + '</span>' : '';
       const showDelta = !isYou;
       secPricing += '<div class="mi-drawer-sec"><div class="mi-drawer-sec-lbl">Pricing</div>' +
-        '<table class="mi-price-tbl"><thead><tr><th>Service</th><th style="text-align:right">Price</th>' + (showDelta?'<th style="text-align:right">vs your avg</th>':'') + '</tr></thead><tbody>';
+        '<table class="mi-price-tbl"><thead><tr><th>Service</th><th style="text-align:right">Price</th>' + (showDelta?'<th style="text-align:right">You vs them</th>':'') + '</tr></thead><tbody>';
       items.forEach(it => {
         let dcell = '';
         if (showDelta) {
           const ya = youCatAvg(it.cat);
           dcell = (ya != null && typeof it.price === 'number')
-            ? '<td class="num delta-neutral">' + (it.price>ya?'+':(it.price<ya?'−':'')) + fmtP(Math.abs(it.price-ya)) + '</td>'
+            ? '<td class="num delta-neutral">' + (ya>it.price?'+':(ya<it.price?'−':'')) + fmtP(Math.abs(ya-it.price)) + '</td>'
             : '<td class="num delta-neutral">—</td>';
         }
         secPricing += '<tr><td>' + esc(it.name) + unitLbl(it.unit) + '</td>' +
           '<td class="num">' + (typeof it.price==='number'?fmtP(it.price):'—') + '</td>' + dcell + '</tr>';
       });
-      secPricing += '</tbody></table>' + (showDelta?'<div class="mi-price-note">Compared with your average for the same category — higher or lower isn’t inherently better.</div>':'') + '</div>';
+      secPricing += '</tbody></table>' + (showDelta?'<div class="mi-price-note">Your average for this category vs their price — “+” means you charge more, “−” means you charge less. Higher or lower isn’t inherently better.</div>':'') + '</div>';
     }
     // Features & Amenities — LEAD with canonical capability chips (from structured tech
     // flags), then append the raw free-text amenities as smaller detail items
