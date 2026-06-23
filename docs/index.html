@@ -9313,7 +9313,7 @@ var LAND_SCREEN = "<section class=\"screen active\" id=\"screen-marketintel\">\n
       const unitLbl = u => u ? ' <span class="mi-price-unit">· ' + esc(u.replace(/^per_/,'per ').replace(/_/g,' ')) + '</span>' : '';
       const showDelta = !isYou;
       secPricing += '<div class="mi-drawer-sec"><div class="mi-drawer-sec-lbl">Pricing</div>' +
-        '<table class="mi-price-tbl"><thead><tr><th>Service</th><th style="text-align:right">Price</th>' + (showDelta?'<th style="text-align:right">You vs them</th>':'') + '</tr></thead><tbody>';
+        '<table class="mi-price-tbl"><thead><tr><th>Service</th><th style="text-align:right">Price' + (showDelta ? ' <span class="mi-th-info" title="Your average for this category vs their price. “+” means you charge more, “−” means you charge less — higher or lower isn’t inherently better." style="display:inline-block;margin-left:4px;cursor:help;color:var(--text-4);vertical-align:-2px"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span>' : '') + '</th>' + (showDelta?'<th style="text-align:right">You vs them</th>':'') + '</tr></thead><tbody>';
       items.forEach(it => {
         let dcell = '';
         if (showDelta) {
@@ -9325,7 +9325,7 @@ var LAND_SCREEN = "<section class=\"screen active\" id=\"screen-marketintel\">\n
         secPricing += '<tr><td>' + esc(it.name) + unitLbl(it.unit) + '</td>' +
           '<td class="num">' + (typeof it.price==='number'?fmtP(it.price):'—') + '</td>' + dcell + '</tr>';
       });
-      secPricing += '</tbody></table>' + (showDelta?'<div class="mi-price-note">Your average for this category vs their price — “+” means you charge more, “−” means you charge less. Higher or lower isn’t inherently better.</div>':'') + '</div>';
+      secPricing += '</tbody></table></div>';
     }
     // Features & Amenities — LEAD with canonical capability chips (from structured tech
     // flags), then append the raw free-text amenities as smaller detail items
