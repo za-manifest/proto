@@ -4924,6 +4924,19 @@ function ob_transitionTo(step) {
       setTimeout(function() { var f = document.getElementById('cardName'); if (f) f.focus(); }, 500);
     }
 
+    /* DEMO UNBLOCK (v16): let AEs breeze through onboarding without the debugger. The
+       field-dependent CTAs (step3Btn/step4Btn/step10CTA/createAccountBtn) normally stay
+       disabled until validation passes; here we force-enable EVERY advance CTA of the
+       arriving onboarding step, AFTER the step-specific hooks (so ob_initPricingStep etc.
+       can't re-disable). Scoped to `next` (this onboarding step only) + only buttons that
+       call ob_nextStep — FTUE, in-app, plan cards and the debugger are untouched. Skipped
+       fields stay safe downstream via existing defaults (plan→'grow', biz/first-name +
+       goals fallbacks). */
+    try {
+      var _obCtas = next.querySelectorAll('button[onclick*="ob_nextStep"]');
+      for (var _c = 0; _c < _obCtas.length; _c++) { _obCtas[_c].disabled = false; _obCtas[_c].removeAttribute('disabled'); }
+    } catch (e) {}
+
     setTimeout(function() { next.classList.remove('entering'); }, 600);
   }, 220);
 }
