@@ -8628,7 +8628,7 @@ var LAND_SCREEN = "<section class=\"screen active\" id=\"screen-marketintel\">\n
       y:b=>(typeof b.reviews==='number'?Math.log10(b.reviews+1):null),
       yTickFmt:v=>{const n=Math.round(Math.pow(10,v)-1); return n>=1000?(n/1000).toFixed(n%1000?1:0)+'k':String(n);},
       xTickFmt:v=>v.toFixed(1),
-      quads:{tr:'Leaders', tl:'Vulnerable', br:'Rising', bl:'Long tail'},
+      quads:{tr:'Leaders', tl:'Established', br:'Hidden gems', bl:'Emerging'},
       tipX:b=>(typeof b.rating==='number'?b.rating.toFixed(1)+'★':'—'),
       tipY:b=>(typeof b.reviews==='number'?fmt(b.reviews)+' reviews':'—')
     },
